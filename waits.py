@@ -89,22 +89,18 @@ def dp(hand, already_used_wait=False, already_used_pair=False):
         if call in outputs:
             ret = outputs[call]
             continue
-        else:
-            stack.append((state, gen))
-            state = call
-            gen = None
-            ret = None
-            continue
+        stack.append((state, gen))
+        state = call
+        gen = None
+        ret = None
     return ret
 
-# hand is input as list of number of tiles, starting from 0; waits are returned starting from -1
+# hand is input as list of number of tiles, starting from 1; waits are returned starting from 0
 def waits(hand, wait=True, pair=True):
     # renumber hand to start from 1, waits start from 0
     hand = [0] + list(hand) + [0]
 
-    result = dp(hand, not wait, not pair)
-    # renumber result
-    return {(None if k is None else k-1): v for k, v in result.items()}
+    return dp(hand, not wait, not pair)
 
 def main():
     while True:
@@ -123,7 +119,7 @@ def main():
         w = waits([int(c) for c in hand], wait, pair)
         if wait:
             print(' ' * (len(prompt) - 1), end='')
-            for i in range(-1, len(hand) + 1):
+            for i in range(len(hand) + 2):
                 if i not in w:
                     c = ' '
                 elif w[i].pinfu and w[i].iipeiko:
