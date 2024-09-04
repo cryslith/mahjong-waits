@@ -65,11 +65,11 @@ class State:
                         add_wait(waitset, new_k, new_v)
         return waitset            
 
-def dp(hand, wait=False, pair=False):
+def dp(hand, already_used_wait=False, already_used_pair=False):
     outputs = {}
     stack = []
 
-    state = State(location=0, n1=0, n2=0, wait=wait, pair=pair)
+    state = State(location=0, n1=0, n2=0, wait=already_used_wait, pair=already_used_pair)
     gen = None
     ret = None
     while True:
@@ -98,33 +98,46 @@ def dp(hand, wait=False, pair=False):
     return ret
 
 # hand is input as list of number of tiles, starting from 0; waits are returned starting from -1
-def waits(hand):
+def waits(hand, wait=True, pair=True):
     # renumber hand to start from 1, waits start from 0
     hand = [0] + list(hand) + [0]
 
-    result = dp(hand)
+    result = dp(hand, not wait, not pair)
     # renumber result
-    return {(k-1 if k is not None else None): v for k, v in result.items()}
+    return {(None if k is None else k-1): v for k, v in result.items()}
 
 def main():
     while True:
         prompt = 'input hand> '
         hand = input(prompt)
-        w = waits([int(c) for c in hand])
-        print(' ' * (len(prompt) - 1), end='')
-        for i in range(-1, len(hand) + 1):
-            if i not in w:
-                c = ' '
-            elif w[i].pinfu and w[i].iipeiko:
-                c = 'I'
-            elif w[i].pinfu:
-                c = 'p'
-            elif w[i].iipeiko:
-                c = 'i'
-            else:
-                c = '^'
-            print(c, end='')
-        print()
+        hand = [int(c) for c in hand]
+        s = sum(hand)
+        if s % 3 == 0:
+            wait = pair = False
+        elif s % 3 == 1:
+            wait = True
+            pair = True
+        elif s % 3 == 2:
+            wait = True
+            pair = False
+        w = waits([int(c) for c in hand], wait, pair)
+        if wait:
+            print(' ' * (len(prompt) - 1), end='')
+            for i in range(-1, len(hand) + 1):
+                if i not in w:
+                    c = ' '
+                elif w[i].pinfu and w[i].iipeiko:
+                    c = 'I'
+                elif w[i].pinfu:
+                    c = 'p'
+                elif w[i].iipeiko:
+                    c = 'i'
+                else:
+                    c = '^'
+                print(c, end='')
+            print()
+        else:
+            print(('OK' + (' PINFU' if w[None].pinfu else '') + (' IIPEIKO' if w[None].iipeiko else '')) if None in w else 'NO')
 
 if __name__ == '__main__':
     main()
